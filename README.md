@@ -20,7 +20,7 @@ Adicionalmente se incluye una **aplicación de predicción** con función `predi
 
 **Validación con imágenes propias:** 3/4 correctas en top-1, 4/4 en top-3.
 
-Detalle completo del proyecto en [`report/resumen_proyecto.md`](report/resumen_proyecto.md).
+Detalle completo del proyecto en [`report.pdf`](report.pdf) (fuente en [`report/resumen_proyecto.md`](report/resumen_proyecto.md)).
 
 ## 🛠️ Stack tecnológico
 
@@ -37,23 +37,22 @@ landmark-classifier/
 ├── README.md
 ├── requirements.txt
 ├── test_gpu.py                  # Verifica PyTorch + CUDA + GPU
-├── data/                        # Dataset (NO incluido en el repo — 50 clases)
-│   ├── train/
-│   └── test/
-├── images_test/                 # Imágenes propias para Fase 4 (opcional)
-├── notebooks/
-│   ├── 00_exploracion_y_preproceso.ipynb    # Fase 1: EDA + DataLoaders
-│   ├── 01_cnn_from_scratch.ipynb            # Fase 2: CNN propia (30 épocas)
-│   ├── 01b_cnn_scratch_continuation.ipynb   # Fase 2b: +11 épocas con early stop
-│   ├── 02_transfer_learning.ipynb           # Fase 3: ResNet50 transfer learning
-│   └── 03_app_prediccion.ipynb              # Fase 4: inferencia + Gradio
+├── report.pdf                   # Resumen del proyecto en PDF
+├── exploracion_y_preproceso.ipynb    # Fase 1: EDA + DataLoaders
+├── cnn_from_scratch.ipynb            # Fase 2: CNN propia (30 ép. + continuación)
+├── transfer_learning.ipynb           # Fase 3: ResNet50 transfer learning
+├── app.ipynb                         # Fase 4: inferencia + Gradio
 ├── src/
 │   ├── data.py                  # get_transforms, get_dataloaders
 │   ├── model.py                 # LandmarkCNN, get_transfer_model
 │   ├── train.py                 # train_one_epoch, validate, train_model
 │   └── predictor.py             # predict_landmarks para inferencia
 ├── models/                      # Checkpoints .pt + versiones TorchScript
-└── report/                      # Gráficos generados + resumen_proyecto.md
+├── report/                      # Gráficos generados + resumen_proyecto.md (fuente del PDF)
+├── data/                        # Dataset (NO incluido en el repo — 50 clases)
+│   ├── train/
+│   └── test/
+└── images_test/                 # Imágenes propias para Fase 4 (opcional)
 ```
 
 ## 🚀 Instalación
@@ -145,31 +144,30 @@ data/
 
 ### Notebooks en orden
 
-Los notebooks usan rutas relativas (`../data`, `../models`, etc.), por lo que hay que correrlos con `notebooks/` como directorio de trabajo. Desde `jupyter notebook` o `jupyter lab` se abre automáticamente así.
+Los notebooks viven en la raíz del repo y usan rutas relativas (`data/`, `models/`, `report/`), por lo que deben ejecutarse con la raíz del repo como directorio de trabajo (`jupyter notebook` o `jupyter lab` lanzado desde ahí).
 
-1. **`00_exploracion_y_preproceso.ipynb`** — Exploración del dataset, visualizaciones, creación de DataLoaders. Genera 3 PNGs en `report/`. Rápido.
-2. **`01_cnn_from_scratch.ipynb`** — CNN propia, 30 épocas. Guarda `models/cnn_scratch_best.pt`. Duración típica: ~15 min en RTX 2050.
-3. **`01b_cnn_scratch_continuation.ipynb`** — Continuación desde el checkpoint de Fase 2 con early stopping manual. Genera la curva combinada. Duración: ~6 min.
-4. **`02_transfer_learning.ipynb`** — ResNet50 en dos pasos (feature extraction 15 épocas + fine-tuning 10 épocas). Guarda `models/resnet50_finetuned_best.pt` y la versión TorchScript. Duración: ~18 min.
-5. **`03_app_prediccion.ipynb`** — Inferencia sobre imágenes propias (opcional, si poblás `images_test/`) + construcción de la interfaz Gradio.
+1. **`exploracion_y_preproceso.ipynb`** — Exploración del dataset, visualizaciones, creación de DataLoaders. Genera 3 PNGs en `report/`. Rápido.
+2. **`cnn_from_scratch.ipynb`** — CNN propia (Fase 2 + continuación consolidadas en un solo notebook): 30 épocas iniciales + hasta 15 épocas adicionales con early stopping manual desde checkpoint. Guarda `models/cnn_scratch_best.pt` y su versión TorchScript. Duración típica: ~22 min en RTX 2050.
+3. **`transfer_learning.ipynb`** — ResNet50 en dos pasos (feature extraction 15 épocas + fine-tuning de `layer4` 10 épocas). Guarda `models/resnet50_finetuned_best.pt` y `resnet50_torchscript.pt`. Duración: ~18 min.
+4. **`app.ipynb`** — Inferencia sobre imágenes propias (si poblás `images_test/`) + construcción de la interfaz Gradio.
 
 ### Ejecutar notebooks desde la línea de comandos
 
 Útil para reproducir en batch:
 
 ```powershell
-jupyter nbconvert --to notebook --execute notebooks/00_exploracion_y_preproceso.ipynb --inplace
+jupyter nbconvert --to notebook --execute cnn_from_scratch.ipynb --inplace
 ```
 
 ### Probar imágenes propias (Fase 4)
 
 1. Copiar ≥4 imágenes `.jpg` o `.png` a `images_test/`.
-2. Abrir `notebooks/03_app_prediccion.ipynb` y ejecutar la celda de predicciones.
+2. Abrir `app.ipynb` y ejecutar la celda de predicciones.
 3. El resultado se guarda en `report/predicciones_propias.png`.
 
 ### Lanzar la interfaz Gradio
 
-La última celda del notebook `03_app_prediccion.ipynb` construye la interfaz pero el `demo.launch(...)` está protegido por la variable de entorno `LAUNCH_GRADIO` (para no bloquear ejecuciones batch).
+La última celda del notebook `app.ipynb` construye la interfaz pero el `demo.launch(...)` está protegido por la variable de entorno `LAUNCH_GRADIO` (para no bloquear ejecuciones batch).
 
 **Desde Jupyter** — abrir el notebook, ejecutar todas las celdas, y en la última correr manualmente:
 
